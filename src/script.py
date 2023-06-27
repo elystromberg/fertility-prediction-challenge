@@ -54,20 +54,99 @@ def predict_outcomes(df):
     # individual did not have a child during 2020-2022, while '1' implies that
     # they did.
 
-    # Keep 
-    keepcols = ['burgstat2019', 'leeftijd2019', 'woonvorm2019', 'oplmet2019', 'aantalki2019']
-    nomem_encr = df["nomem_encr"]
-    
+    #Column selection
+    from sklearn.compose import make_column_selector as selector
+    from sklearn.compose import ColumnTransformer
+
+    #Model
+    from sklearn.preprocessing import OneHotEncoder
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.pipeline import make_pipeline
+    from sklearn.linear_model import LogisticRegression
+
+    keepcols = ['nomem_encr', 
+            'gebjaar', 
+            'geslacht',
+            'oplmet2017', 
+            'oplmet2018', 
+            'oplmet2019', 
+            'aantalki2017', 
+            'aantalki2018', 
+            'aantalki2019', 
+            'positie2017',
+            'positie2018', 
+            'positie2019', 
+            'leeftijd2017',
+            'leeftijd2018', 
+            'leeftijd2019', 
+            'aantalhh2017', 
+            'aantalhh2018', 
+            'aantalhh2019', 
+            'lftdhhh2017',
+            'lftdhhh2018', 
+            'lftdhhh2019',
+            'partner2017',
+            'partner2018',
+            'partner2019',
+            'belbezig2017', 
+            'belbezig2018',
+            'belbezig2019',
+            'brutohh_f2017',
+            'brutohh_f2018', 
+            'brutohh_f2019',
+            #'cf08a035', 'cf09b035', 'cf10c035', 'cf11d035', 'cf12e035', 'cf13f035', 'cf14g035',
+            #'cf17k454', 
+            'cf18k454',
+            #'cf19k454', 
+            #'cf17k455', 
+            'cf18k455',
+            #'cf19k455',
+            #'cf17k130',
+            'cf18k130',
+            #'cf19k130',
+            #'cf17k129',
+            'cf18k129',
+            #'cf19k129',
+            #'cf17k128',
+            'cf18k128',
+            #'cf19k128',
+            #'cf17k407', 
+            #'cf18k407',
+            #'cf19k407', 
+            #'cf17k408', 
+            #'cf18k408',
+            #'cf19k408',
+           ]
     df = df.loc[:, keepcols]
+
+
+    # #### Categorical versus Numerical features
+    #Categorical variables 
+    categorical_columns_selector = selector(dtype_include=object)
+    categorical_columns = categorical_columns_selector(df)
+
+    #Numerical variables
+    numerical_columns_selector = selector(dtype_exclude=object)
+    numerical_columns = numerical_columns_selector(df)
+
+    for col in numerical_columns:
+        col_mean = df[col].mean()
+        df[col] = df[col].fillna(col_mean)
+
+    for col in categorical_columns:
+       df[col] = df[col].fillna('none')
     
     # Load your trained model from the models directory
-    model_path = os.path.join(os.path.dirname(__file__), "..", "models", "model.joblib")
+    model_path = os.path.join(os.path.dirname(__file__),
+                              #"..", 
+                              "models", 
+                              "team_5highfive_2.joblib")
     model = load(model_path)
 
     # Use your trained model for prediction
     predictions = model.predict(df)
     # Return the result as a Pandas DataFrame with the columns "nomem_encr" and "prediction"
-    return pd.concat([nomem_encr, pd.Series(predictions, name="prediction")], axis=1)
+    return pd.concat([df['nomem_encr'], pd.Series(predictions, name="prediction")], axis=1)
 
 
 def predict(input_path, output):
