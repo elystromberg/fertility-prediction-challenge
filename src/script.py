@@ -138,7 +138,7 @@ def predict_outcomes(df):
     
     # Load your trained model from the models directory
     model_path = os.path.join(os.path.dirname(__file__),
-                              #"..", 
+                              "..", 
                               "models", 
                               "team_5highfive_2.joblib")
     model = load(model_path)
